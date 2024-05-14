@@ -106,7 +106,7 @@ function scanQRCode(stream) {
         video.srcObject.getTracks().forEach(track => track.stop());
         video.srcObject = null;
       } else {
-        requestAnimationFrame(drawVideoToCanvas);
+        setTimeout(() => requestAnimationFrame(drawVideoToCanvas), 100); // Добавляем задержку в 100 мс
       }
     } else {
       requestAnimationFrame(drawVideoToCanvas);
