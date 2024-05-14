@@ -2,14 +2,76 @@
 <html>
 <head>
   <title>Сканирование QR-кода</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    #video {
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      margin-bottom: 16px;
+    }
+
+    #controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    select, button {
+      padding: 8px 16px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #result {
+      width: 320px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      resize: none;
+    }
+  </style>
 </head>
 <body>
 
+<h1>Сканирование QR-кода</h1>
+
 <video id="video" width="320" height="240" autoplay muted playsinline></video>
 <canvas id="canvas" style="display: none;"></canvas>
-<select id="cameraSelector"></select>
-<button id="startButton">Запустить камеру</button>
-<br><br>
+
+<div id="controls">
+  <select id="cameraSelector"></select>
+  <button id="startButton">Запустить камеру</button>
+</div>
+
 <textarea id="result" rows="4" cols="50" readonly></textarea>
 
 <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
