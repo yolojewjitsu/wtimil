@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Сканирование QR-кода</title>
+</head>
+<body>
+
+<video id="video" width="320" height="240" autoplay muted playsinline></video>
+<canvas id="canvas" style="display: none;"></canvas>
+<select id="cameraSelector"></select>
+<button id="startButton">Запустить камеру</button>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+
+<script>
+// Функция для запроса разрешений на доступ к камере
+function requestCameraPermission() {
+  return navigator.mediaDevices.getUserMedia({ video: true });
+}
+
+// Функция для получения доступных камер и добавления их в выпадающий список
+function getAvailableCameras() {
+  return navigator.mediaDevices.enumerateDevices()
+    .then(devices => devices.filter(device => device.kind === 'videoinput'));
+}
+
+// Функция для запуска камеры
+function startCamera(deviceId) {
+  var constraints = {
+    video: { deviceId: { exact: deviceId } }
+  };
+  return navigator.mediaDevices.getUserMedia(constraints);
+}
+
+// Обработчик события при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+  // Получение доступных камер и добавление их в выпадающий список
+  getAvailableCameras().then(cameras => {
+    var cameraSelector = document.getElementById('cameraSelector');
+    cameras.forEach(camera => {
+      var option = document.createElement('option');
+      option.value = camera.deviceId;
+      option.text = camera.label || 'Camera ' + (cameraSelector.length + 1);
+      cameraSelector.appendChild(option);
+    });
+  });
+});
+
+// Обработчик события при выборе камеры из списка
+document.getElementById('cameraSelector').addEventListener('change', function() {
+  var selectedDeviceId = this.value;
+  if (selectedDeviceId) {
+    // При выборе камеры из списка, перезапускаем камеру с новыми параметрами
+    startCamera(selectedDeviceId)
+      .then(stream => {
+        var video = document.getElementById('video');
+        video.srcObject = stream;
+        video.play();
+      })
+      .catch(error => {
+        console.error('Ошибка при запуске камеры:', error);
+        alert('Ошибка при запуске камеры. Проверьте настройки разрешений и CSP на вашем сервере.');
+      });
+  }
+});
+
+// Обработчик события при нажатии на кнопку "Запустить камеру"
+document.getElementById('startButton').addEventListener('click', function() {
+  requestCameraPermission()
+    .then(stream => {
+      // Успешно получили доступ к камере, запускаем видеопоток
+      var video = document.getElementById('video');
+      video.srcObject = stream;
+      video.play();
+    })
+    .catch(error => {
+      // Возникла ошибка при запросе разрешений на доступ к камере
+      console.error('Ошибка при доступе к камере:', error);
+      alert('Ошибка при доступе к камере. Проверьте настройки разрешений и CSP на вашем сервере.');
+    });
+});
+
+// Обработчик события при сканировании QR-кода
+function scanQRCode() {
+  var video = document.getElementById('video');
+  var canvasElement = document.getElementById('canvas');
+  var canvas = canvasElement.getContext('2d');
+
+  function drawVideoToCanvas() {
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      canvasElement.width = video.videoWidth;
+      canvasElement.height = video.videoHeight;
+      canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+      var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+      var code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: "dontInvert",
+      });
+
+      if (code) {
+        console.log("Найден QR-код:", code.data);
+        alert("QR-код: " + code.data);
+        video.srcObject.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+      } else {
+        requestAnimationFrame(drawVideoToCanvas);
+      }
+    } else {
+      requestAnimationFrame(drawVideoToCanvas);
+    }
+  }
+
+  drawVideoToCanvas();
+}
+</script>
+
+</body>
+</html>
