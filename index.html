@@ -9,6 +9,8 @@
 <canvas id="canvas" style="display: none;"></canvas>
 <select id="cameraSelector"></select>
 <button id="startButton">Запустить камеру</button>
+<br><br>
+<textarea id="result" rows="4" cols="50" readonly></textarea>
 
 <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
 
@@ -72,6 +74,7 @@ document.getElementById('startButton').addEventListener('click', function() {
       var video = document.getElementById('video');
       video.srcObject = stream;
       video.play();
+      scanQRCode(stream);
     })
     .catch(error => {
       // Возникла ошибка при запросе разрешений на доступ к камере
@@ -81,10 +84,11 @@ document.getElementById('startButton').addEventListener('click', function() {
 });
 
 // Обработчик события при сканировании QR-кода
-function scanQRCode() {
+function scanQRCode(stream) {
   var video = document.getElementById('video');
   var canvasElement = document.getElementById('canvas');
   var canvas = canvasElement.getContext('2d');
+  var resultTextArea = document.getElementById('result');
 
   function drawVideoToCanvas() {
     if (video.readyState === video.HAVE_ENOUGH_DATA) {
@@ -98,7 +102,7 @@ function scanQRCode() {
 
       if (code) {
         console.log("Найден QR-код:", code.data);
-        alert("QR-код: " + code.data);
+        resultTextArea.value = "QR-код: " + code.data;
         video.srcObject.getTracks().forEach(track => track.stop());
         video.srcObject = null;
       } else {
