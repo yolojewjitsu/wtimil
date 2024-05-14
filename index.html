@@ -29,7 +29,11 @@ function getAvailableCameras() {
 // Функция для запуска камеры
 function startCamera(deviceId) {
   var constraints = {
-    video: { deviceId: { exact: deviceId } }
+    video: { 
+      deviceId: { exact: deviceId },
+      width: { ideal: 1280 },
+      height: { ideal: 720 }
+    }
   };
   return navigator.mediaDevices.getUserMedia(constraints);
 }
@@ -68,19 +72,24 @@ document.getElementById('cameraSelector').addEventListener('change', function() 
 
 // Обработчик события при нажатии на кнопку "Запустить камеру"
 document.getElementById('startButton').addEventListener('click', function() {
-  requestCameraPermission()
-    .then(stream => {
-      // Успешно получили доступ к камере, запускаем видеопоток
-      var video = document.getElementById('video');
-      video.srcObject = stream;
-      video.play();
-      scanQRCode(stream);
-    })
-    .catch(error => {
-      // Возникла ошибка при запросе разрешений на доступ к камере
-      console.error('Ошибка при доступе к камере:', error);
-      alert('Ошибка при доступе к камере. Проверьте настройки разрешений и CSP на вашем сервере.');
-    });
+  var selectedDeviceId = document.getElementById('cameraSelector').value;
+  if (selectedDeviceId) {
+    startCamera(selectedDeviceId)
+      .then(stream => {
+        // Успешно получили доступ к камере, запускаем видеопоток
+        var video = document.getElementById('video');
+        video.srcObject = stream;
+        video.play();
+        scanQRCode(stream);
+      })
+      .catch(error => {
+        // Возникла ошибка при запросе разрешений на доступ к камере
+        console.error('Ошибка при доступе к камере:', error);
+        alert('Ошибка при доступе к камере. Проверьте настройки разрешений и CSP на вашем сервере.');
+      });
+  } else {
+    alert('Выберите камеру из списка.');
+  }
 });
 
 // Обработчик события при сканировании QR-кода
